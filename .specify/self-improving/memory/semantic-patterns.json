@@ -1,0 +1,79 @@
+{
+  "patterns": {
+    "pat-2026-03-22-001": {
+      "id": "pat-2026-03-22-001",
+      "name": "TDD Implementation Pattern",
+      "source": "implementation_review",
+      "confidence": 0.95,
+      "applications": 1,
+      "created": "2026-03-22",
+      "category": "backend_tdd",
+      "pattern": "Tests must be written before implementation code",
+      "problem": "Writing implementation first leads to poor test coverage and unclear requirements",
+      "solution": {
+        "steps": [
+          "Write failing test first (RED)",
+          "Implement minimal code to pass (GREEN)",
+          "Refactor while keeping tests green (REFACTOR)"
+        ],
+        "quality_rules": [
+          "Test coverage must be >80%",
+          "All edge cases must be covered",
+          "Tests must be independent and repeatable"
+        ]
+      },
+      "target_agents": ["backend", "qa"]
+    },
+    "pat-2026-03-22-002": {
+      "id": "pat-2026-03-22-002",
+      "name": "Spec-First Development",
+      "source": "orchestrator_workflow",
+      "confidence": 0.98,
+      "applications": 3,
+      "created": "2026-03-22",
+      "category": "development_process",
+      "pattern": "Create specification documents before any implementation",
+      "problem": "Starting implementation without specs leads to misaligned expectations and rework",
+      "solution": {
+        "steps": [
+          "Check .specify/specs/ for existing documentation",
+          "If missing, create spec with API contract, UI requirements, test cases",
+          "Get spec approval before delegating to agents"
+        ],
+        "quality_rules": [
+          "Spec must include API endpoints and request/response format",
+          "Spec must include UI layout and interaction requirements",
+          "Spec must include test cases for all scenarios"
+        ]
+      },
+      "target_agents": ["orchestrator", "backend", "frontend"]
+    },
+    "pat-2026-03-22-003": {
+      "id": "pat-2026-03-22-003",
+      "name": "WCAG AA Accessibility Standard",
+      "source": "frontend_ui_ux",
+      "confidence": 0.92,
+      "applications": 2,
+      "created": "2026-03-22",
+      "category": "frontend_accessibility",
+      "pattern": "All UI components must meet WCAG AA accessibility standards",
+      "problem": "Ignoring accessibility excludes users and creates technical debt",
+      "solution": {
+        "contrast_ratios": {
+          "normal_text": "4.5:1 minimum",
+          "large_text": "3:1 minimum",
+          "ui_components": "3:1 minimum"
+        },
+        "requirements": [
+          "Use semantic HTML elements",
+          "Add aria-labels to interactive elements",
+          "Ensure keyboard navigation works",
+          "Test with screen readers"
+        ]
+      },
+      "target_agents": ["frontend"]
+    }
+  },
+  "last_updated": "2026-03-22T12:00:00Z",
+  "total_patterns": 3
+}
