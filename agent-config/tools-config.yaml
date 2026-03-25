@@ -1,0 +1,99 @@
+tools:
+  # Spec 解析工具
+  spec-analyzer:
+    type: internal
+    enabled: true
+    template_path: templates/specs/
+    output_format: json
+    
+  # UI/UX 设计工具
+  ui-ux-pro-max:
+    type: skill
+    enabled: true
+    skill_name: ui-ux-pro-max
+    stack: vue3
+    
+  # TDD 开发工具
+  tdd:
+    type: skill
+    enabled: true
+    skill_name: test-driven-development
+    test_framework: pytest
+    
+  # E2E 测试工具
+  playwright:
+    type: skill
+    enabled: true
+    skill_name: playwright-e2e-testing
+    browsers:
+      - chromium
+      - firefox
+      
+  # 知识库工具
+  knowledge-base:
+    type: internal
+    enabled: true
+    storage: markdown
+    paths:
+      - knowledge/decisions/
+      - knowledge/errors/
+      - knowledge/best-practices/
+    search:
+      enabled: true
+      index_path: .index/
+
+# 工作流配置
+workflow:
+  default:
+    - spec-analyzer
+    - architecture-design
+    - tdd
+    - playwright
+    - knowledge-base
+    
+  shortcuts:
+    parse:
+      - spec-analyzer
+    design:
+      - architecture-design
+      - ui-ux-pro-max
+    develop:
+      - tdd
+    test:
+      - playwright
+
+# 代码生成配置
+code_generation:
+  backend:
+    framework: django
+    version: "4.2"
+    python_version: "3.11"
+    style:
+      line_length: 88
+      quote: double
+      
+  frontend:
+    framework: vue
+    version: "3"
+    typescript: true
+    build_tool: vite
+    ui_library: element-plus
+    state_management: pinia
+    style:
+      script_setup: true
+      composition_api: true
+
+# 测试配置
+testing:
+  unit:
+    framework: pytest
+    plugins:
+      - pytest-django
+      - pytest-asyncio
+    coverage_target: 80
+    
+  e2e:
+    framework: playwright
+    timeout: 30000
+    screenshot: on_failure
+    video: retain_on_failure
