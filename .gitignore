@@ -1,0 +1,43 @@
+# 5G Test AI Skill - Git Ignore
+
+# 系统目录
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 临时文件
+*.tmp
+*.log
+*.bak
+
+# 插件缓存
+.claude/plugins/cache/
+.claude/plugins/marketplaces/
+
+# Skills 缓存
+.claude/skills/
+.config/opencode/superpowers/
+
+# 嵌入式 Git 仓库
+.claude/plugins/cache/claude-plugins-official/
+.claude/plugins/marketplaces/claude-plugins-official/
+.claude/plugins/marketplaces/superpowers-marketplace/
+.claude/skills/superpowers/
+.config/opencode/skills/superpowers/
+
+# 测试数据
+*.pyc
+__pycache__/
+.pytest_cache/
+
+# 本地配置
+*.local
+.env
