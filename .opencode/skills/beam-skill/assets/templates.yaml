@@ -1,0 +1,62 @@
+templates:
+  - id: beam_initial_access
+    name: 初始波束接入
+    type: FUNC
+    variables:
+      - name: ssb_num
+        values: [4, 8, 16]
+      - name: frequency_range
+        values: ["FR1", "FR2"]
+    precondition: |
+      1. 基站版本 {{version}}，频段 {{band}}
+      2. 小区已建立，SSB 波束数量 {{ssb_num}}
+      3. UE 处于关机状态
+    steps: |
+      1. UE 开机，搜索小区
+      2. UE 执行 SSB 波束扫描
+      3. UE 选择最优波束发起随机接入
+    expected_result: |
+      - UE 成功检测到 SSB 信号
+      - 选择 RSRP 最高的波束
+      - 随机接入成功，建立 RRC 连接
+    postcondition: 释放 UE 连接
+
+  - id: beam_measurement
+    name: 波束测量上报
+    type: FUNC
+    variables:
+      - name: report_type
+        values: ["周期性", "事件触发", "非周期性"]
+    precondition: |
+      1. 基站版本 {{version}}
+      2. UE 处于 RRC_CONNECTED 状态
+      3. 基站配置波束测量参数
+    steps: |
+      1. 基站下发波束测量配置
+      2. UE 测量各 SSB 波束 RSRP/RSRQ
+      3. UE 上报波束测量报告
+    expected_result: |
+      - UE 正确测量所有配置波束
+      - 上报格式符合协议
+      - 测量值与真实值偏差 < 2dB
+    postcondition: 清除测量配置
+
+  - id: beam_failure_recovery
+    name: 波束失败恢复
+    type: NEG
+    variables:
+      - name: failure_cause
+        values: ["遮挡", "UE 快速移动", "干扰"]
+    precondition: |
+      1. 基站版本 {{version}}
+      2. UE 处于 RRC_CONNECTED 状态，使用特定波束
+      3. 引入波束失败条件：{{failure_cause}}
+    steps: |
+      1. 触发波束失败条件
+      2. UE 检测到波束失败
+      3. UE 发起波束失败恢复流程
+    expected_result: |
+      - UE 在 {{failure_cause}} 下检测到波束失败
+      - UE 发起 BFR 流程
+      - 成功恢复波束连接或触发切换
+    postcondition: 恢复正常波束配置

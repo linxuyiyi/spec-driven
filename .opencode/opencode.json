@@ -1,0 +1,25 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": true,
+  "permission": {
+    "edit": "ask",
+    "bash": "ask",
+    "skill": {
+      "*": "deny",
+      "dss-skill": "allow",
+      "handover-skill": "allow",
+      "beam-skill": "allow"
+    }
+  },
+  "agent": {
+    "tfo-agent": {
+      "model": "claude-opus-4.5",
+      "temperature": 0.3,
+      "permission": {
+        "skill": {
+          "*": "allow"
+        }
+      }
+    }
+  }
+}

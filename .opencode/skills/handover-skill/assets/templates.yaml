@@ -1,0 +1,43 @@
+templates:
+  - id: ho_basic
+    name: 同频切换基础功能
+    type: FUNC
+    variables:
+      - name: event_type
+        values: ["A3", "A5"]
+      - name: ttt
+        values: [0, 320]
+    precondition: |
+      1. 基站版本 {{version}}，部署两个同频小区 CellA 和 CellB
+      2. UE 在 CellA 下处于 RRC 连接态，业务进行中
+      3. 测量配置已下发，事件 {{event_type}}，TTT={{ttt}}ms
+    steps: |
+      1. UE 从 CellA 向 CellB 移动，使 CellB 信号逐渐增强
+      2. 触发测量报告
+      3. 基站下发切换命令
+      4. UE 执行切换，同步到 CellB
+    expected_result: |
+      - UE 成功切换到 CellB，业务未中断
+      - 空口可见 RRCReconfiguration（包含 mobilityControlInfo）
+      - 切换完成消息 RRCReconfigurationComplete 上报
+    postcondition: UE 返回 CellA，删除测量配置
+
+  - id: ho_failure
+    name: 切换失败场景
+    type: NEG
+    variables:
+      - name: failure_cause
+        values: ["目标小区资源不足", "Xn 接口故障", "无线条件恶化"]
+    precondition: |
+      1. 基站版本 {{version}}
+      2. UE 处于 RRC 连接态
+      3. 故障条件：{{failure_cause}}
+    steps: |
+      1. 配置切换参数
+      2. 触发切换条件
+      3. 观察切换行为
+    expected_result: |
+      - 切换失败，UE 保持在源小区或发起 RRC 重建
+      - 日志记录失败原因值
+      - 业务中断或降级
+    postcondition: 恢复正常配置
