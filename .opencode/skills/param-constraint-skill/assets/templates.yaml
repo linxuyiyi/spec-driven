@@ -1,0 +1,121 @@
+# 提示：请 Agent 根据用户输入的具体受控对象 (MO) 和参数 (Parameter)，替换下方模板中的变量。
+# 若用户提供了具体的取值范围，请结合设计知识自动计算 {{min-1}} 和 {{max+1}}。
+
+templates:
+  - id: param_single_boundary
+    name: 单参数边界值与越界校验
+    type: NEG
+    variables:
+      - name: test_value
+        values: ["{{min-1}}", "{{max+1}}", "空值", "非法字符"]
+    precondition: |
+      1. 基站正常运行，连接到网管/LMT 终端。
+      2. 目标配置对象 {{mo_name}} 处于可配置状态。
+    steps: |
+      1. 在网管界面或命令行输入命令，配置 {{mo_name}} 的参数 {{param_name}}。
+      2. 将参数值设置为：{{test_value}}。
+      3. 提交并执行配置下发。
+    expected_result: |
+      - 网管/LMT 拦截下发或基站返回执行失败。
+      - 错误提示信息明确指出 {{param_name}} 的有效范围为 [{{min}} ~ {{max}}] 或格式错误。
+      - 查询基站实际数据，该参数保持原值，未被篡改。
+    postcondition: 无需特殊恢复，确认原业务正常即可。
+
+  - id: param_multi_mutex
+    name: 多参数互斥校验
+    type: NEG
+    variables:
+      - name: config_order
+        values: ["先开启{{param_A}}再开启{{param_B}}", "先开启{{param_B}}再开启{{param_A}}"]
+    precondition: |
+      1. 基站正常运行。
+      2. 目标配置对象 {{mo_name}} 存在互斥参数：{{param_A}} 和 {{param_B}}。
+      3. 当前状态下，{{param_A}} 和 {{param_B}} 均处于关闭/未配置状态。
+    steps: |
+      1. 按照顺序：{{config_order}}。
+      2. 下发第一条命令，开启第一个参数。
+      3. 下发第二条命令，尝试开启第二个参数。
+    expected_result: |
+      - 第一条命令执行成功。
+      - 第二条命令执行失败，系统返回"参数互斥"或"业务冲突"相关的明确错误码。
+      - 查询系统状态，只有第一个参数处于开启状态。
+    postcondition: 将修改过的参数恢复为关闭/未配置状态。
+
+  - id: param_dependency
+    name: 参数依赖关系校验
+    type: NEG
+    variables:
+      - name: dependent_param
+        values: ["子参数"]
+      - name: prerequisite_param
+        values: ["父参数"]
+    precondition: |
+      1. 基站正常运行。
+      2. 目标配置对象 {{mo_name}} 存在依赖关系：配置 {{dependent_param}} 前必须先配置 {{prerequisite_param}}。
+    steps: |
+      1. 直接下发命令配置 {{dependent_param}}。
+      2. 不配置 {{prerequisite_param}}。
+      3. 提交并执行配置下发。
+    expected_result: |
+      - 配置被拒绝。
+      - 返回错误提示"依赖参数未配置"或"父对象不存在"。
+      - 系统配置未发生任何变更。
+    postcondition: 无需特殊恢复。
+
+  - id: param_enum_invalid
+    name: 非法枚举值校验
+    type: NEG
+    variables:
+      - name: invalid_value
+        values: ["非法字符串", "特殊字符!@#", "超长大于允许长度的字符串"]
+    precondition: |
+      1. 基站正常运行。
+      2. 目标参数 {{param_name}} 为枚举类型，有效枚举值为：{{enum_values}}。
+    steps: |
+      1. 下发命令配置 {{mo_name}} 的 {{param_name}}。
+      2. 设置值为：{{invalid_value}}。
+      3. 提交并执行配置下发。
+    expected_result: |
+      - 配置被拒绝。
+      - 返回错误提示"非法枚举值"或"参数格式错误"。
+      - 查询系统状态，该参数保持原值。
+    postcondition: 无需特殊恢复。
+
+  - id: param_required_missing
+    name: 必填参数缺失校验
+    type: NEG
+    variables:
+      - name: required_param
+        values: ["必填参数"]
+    precondition: |
+      1. 基站正常运行。
+      2. 目标配置对象 {{mo_name}} 包含必填参数 {{required_param}}。
+    steps: |
+      1. 下发命令创建或修改 {{mo_name}}。
+      2. 不提供必填参数 {{required_param}} 的值。
+      3. 提交并执行配置下发。
+    expected_result: |
+      - 配置被拒绝。
+      - 返回错误提示"缺失必填参数"。
+      - 对象创建/修改失败。
+    postcondition: 无需特殊恢复。
+
+  - id: param_boundary_valid
+    name: 单参数边界有效值校验
+    type: FUNC
+    variables:
+      - name: boundary_value
+        values: ["{{min}}", "{{max}}"]
+    precondition: |
+      1. 基站正常运行。
+      2. 目标参数 {{param_name}} 有效范围为 [{{min}}, {{max}}]。
+    steps: |
+      1. 下发命令配置 {{mo_name}} 的 {{param_name}}。
+      2. 设置值为：{{boundary_value}}。
+      3. 提交并执行配置下发。
+      4. 查询配置结果。
+    expected_result: |
+      - 配置成功。
+      - 查询确认参数值为 {{boundary_value}}。
+      - 无告警产生。
+    postcondition: 恢复参数为原值。

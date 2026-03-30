@@ -1,0 +1,181 @@
+templates:
+  # 1. implies 约束
+  - id: ocl_implies
+    name: implies 约束验证
+    type: FUNC
+    variables:
+      - name: condition
+        values: ["bandwidth=100MHz"]
+      - name: constraint_ok
+        values: ["PRB=200"]
+      - name: constraint_violation
+        values: ["PRB=300"]
+
+    precondition: |
+      1. 基站正常运行
+      2. 支持相关参数配置
+
+    steps: |
+      1. 配置 {{condition}} 且 {{constraint_ok}}
+      2. 提交配置
+      3. 再配置 {{condition}} 且 {{constraint_violation}}
+      4. 提交配置
+
+    expected_result: |
+      - 第一次配置成功
+      - 第二次配置失败
+      - 返回约束校验错误信息
+      - 系统保持合法配置
+
+    postcondition: 恢复默认配置
+
+
+  # 2. 违反约束（NEG）
+  - id: ocl_negative
+    name: 约束违反场景验证
+    type: NEG
+    variables:
+      - name: condition
+        values: ["bandwidth=100MHz"]
+      - name: violation
+        values: ["PRB>273"]
+
+    precondition: |
+      1. 基站运行正常
+
+    steps: |
+      1. 设置 {{condition}} 且 {{violation}}
+      2. 提交配置
+
+    expected_result: |
+      - 配置被拒绝
+      - 返回错误码
+      - 系统配置未生效
+
+    postcondition: 无需处理
+
+
+  # 3. 条件不触发（重要）
+  - id: ocl_condition_false
+    name: 条件不满足时约束不生效
+    type: FUNC
+    variables:
+      - name: condition_false
+        values: ["bandwidth=20MHz"]
+      - name: any_value
+        values: ["PRB=300"]
+
+    precondition: |
+      1. 基站正常运行
+
+    steps: |
+      1. 设置 {{condition_false}} 且 {{any_value}}
+      2. 提交配置
+
+    expected_result: |
+      - 配置成功
+      - 未触发约束限制
+
+    postcondition: 恢复默认配置
+
+
+  # 4. AND 约束
+  - id: ocl_and
+    name: AND 约束验证
+    type: FUNC
+    variables:
+      - name: condition_a
+        values: ["featureA=ON"]
+      - name: condition_b
+        values: ["featureB=ON"]
+
+    precondition: |
+      1. 系统正常
+
+    steps: |
+      1. 同时配置 {{condition_a}} 且 {{condition_b}}
+      2. 提交配置
+
+    expected_result: |
+      - 满足 AND 条件时配置成功
+
+    postcondition: 恢复默认配置
+
+
+  # 5. OR 约束
+  - id: ocl_or
+    name: OR 约束验证
+    type: FUNC
+    variables:
+      - name: condition_a
+        values: ["mode=A"]
+      - name: condition_b
+        values: ["mode=B"]
+
+    precondition: |
+      1. 系统正常
+
+    steps: |
+      1. 配置 {{condition_a}}
+      2. 提交配置
+      3. 配置 {{condition_b}}
+      4. 提交配置
+
+    expected_result: |
+      - 任一条件满足时配置成功
+
+    postcondition: 恢复默认配置
+
+
+  # 6. 互斥约束
+  - id: ocl_exclusive
+    name: 互斥约束验证
+    type: NEG
+    variables:
+      - name: feature_a
+        values: ["featureA=ON"]
+      - name: feature_b
+        values: ["featureB=ON"]
+
+    precondition: |
+      1. 系统正常
+      2. featureA 与 featureB 互斥
+
+    steps: |
+      1. 同时配置 {{feature_a}} 且 {{feature_b}}
+      2. 提交配置
+
+    expected_result: |
+      - 配置被拒绝
+      - 返回互斥错误信息
+
+    postcondition: 无需处理
+
+
+  # 7. 边界值约束
+  - id: ocl_boundary
+    name: 边界值约束验证
+    type: FUNC
+    variables:
+      - name: param
+        values: ["PRB"]
+      - name: boundary_value
+        values: ["273"]
+      - name: over_boundary
+        values: ["274"]
+
+    precondition: |
+      1. 系统正常
+      2. PRB 上限=273
+
+    steps: |
+      1. 配置 {{param}}={{boundary_value}}
+      2. 提交配置
+      3. 配置 {{param}}={{over_boundary}}
+      4. 提交配置
+
+    expected_result: |
+      - 边界值配置成功
+      - 越界值配置失败
+
+    postcondition: 恢复默认配置
