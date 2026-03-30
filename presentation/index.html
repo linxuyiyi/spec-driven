@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DRF + Vue3 Multi-Agent 开发系统 - 技术方案汇报</title>
+  <style>
+    :root {
+      --primary: #1C2833;
+      --secondary: #2E4053;
+      --accent: #3498DB;
+      --success: #27AE60;
+      --warning: #F39C12;
+      --danger: #E74C3C;
+      --light: #F4F6F6;
+      --text: #2C2C2C;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+      line-height: 1.8;
+      color: var(--text);
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 60px 20px;
+      text-align: center;
+      margin-bottom: 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+    
+    header p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .meta-info {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+    
+    .meta-item {
+      background: rgba(255,255,255,0.1);
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-size: 0.9rem;
+    }
+    
+    section {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    h2 {
+      color: var(--primary);
+      font-size: 1.8rem;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 3px solid var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    h2::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 4px;
+    }
+    
+    h3 {
+      color: var(--secondary);
+      font-size: 1.3rem;
+      margin: 30px 0 15px;
+    }
+    
+    p {
+      margin-bottom: 15px;
+      text-align: justify;
+    }
+    
+    .highlight {
+      background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+      padding: 20px 25px;
+      border-left: 5px solid var(--warning);
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+    }
+    
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 25px;
+      margin: 25px 0;
+    }
+    
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin: 25px 0;
+    }
+    
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin: 25px 0;
+    }
+    
+    .card {
+      background: var(--light);
+      padding: 25px;
+      border-radius: 10px;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+    
+    .card.primary { border-color: var(--primary); }
+    .card.success { border-color: var(--success); }
+    .card.warning { border-color: var(--warning); }
+    .card.danger { border-color: var(--danger); }
+    
+    .card h4 {
+      color: var(--primary);
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .card ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    
+    .card li {
+      padding: 5px 0;
+      padding-left: 20px;
+      position: relative;
+      font-size: 0.9rem;
+    }
+    
+    .card li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+    
+    .architecture-diagram {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      margin: 25px 0;
+      overflow-x: auto;
+      border: 2px solid var(--light);
+    }
+    
+    .architecture-diagram pre {
+      font-family: 'Courier New', Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--text);
+      white-space: pre;
+    }
+    
+    .architecture-box {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      margin: 10px;
+      min-width: 200px;
+      text-align: center;
+    }
+    
+    .architecture-box small {
+      display: block;
+      opacity: 0.8;
+      font-size: 0.85rem;
+      margin-top: 5px;
+    }
+    
+    .flow-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 30px 0;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .flow-step {
+      background: linear-gradient(135deg, var(--accent) 0%, #2980B9 100%);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      text-align: center;
+      min-width: 120px;
+      flex: 1;
+      max-width: 180px;
+    }
+    
+    .flow-step span {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .flow-arrow {
+      color: var(--accent);
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 25px 0;
+      font-size: 0.95rem;
+    }
+    
+    th, td {
+      padding: 15px 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    th {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+    }
+    
+    tr:hover {
+      background: var(--light);
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    
+    .status-badge.success { background: #d4edda; color: #155724; }
+    .status-badge.warning { background: #fff3cd; color: #856404; }
+    .status-badge.danger { background: #f8d7da; color: #721c24; }
+    
+    code {
+      background: #f8f9fa;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'Courier New', Consolas, monospace;
+      font-size: 0.9em;
+      color: #E83E8C;
+    }
+    
+    pre {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'Courier New', Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      margin: 20px 0;
+    }
+    
+    .quote {
+      background: linear-gradient(135deg, #e8f4fd 0%, #d6eaf8 100%);
+      padding: 20px 25px;
+      border-left: 5px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+      font-style: italic;
+      color: var(--secondary);
+    }
+    
+    .toc {
+      background: var(--light);
+      padding: 25px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+    }
+    
+    .toc h3 {
+      margin-top: 0;
+      color: var(--primary);
+    }
+    
+    .toc ol {
+      padding-left: 25px;
+    }
+    
+    .toc li {
+      margin: 10px 0;
+    }
+    
+    .toc a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    
+    .toc a:hover {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+    
+    .icon { font-size: 1.3rem; }
+    
+    footer {
+      text-align: center;
+      padding: 30px;
+      color: var(--secondary);
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+      header h1 { font-size: 1.8rem; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      section { padding: 25px 20px; }
+      .flow-diagram { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 DRF + Vue3 Multi-Agent 开发系统</h1>
+    <p>基于 Spec-First、TDD、UI-UX-Pro-Max 原则的多 Agent 全栈开发框架</p>
+    <div class="meta-info">
+      <div class="meta-item">📅 2026-03-24</div>
+      <div class="meta-item">📋 技术方案汇报</div>
+      <div class="meta-item">🎯 自动化用例运营管理系统</div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- 目录 -->
+    <section class="toc">
+      <h3>📑 目录</h3>
+      <ol>
+        <li><a href="#overview">方案概述</a></li>
+        <li><a href="#architecture">系统架构</a></li>
+        <li><a href="#agents">Agent 职责详解</a></li>
+        <li><a href="#workflow">核心工作流程</a></li>
+        <li><a href="#spec-first">Spec-First 开发模式</a></li>
+        <li><a href="#tdd">TDD 强制流程</a></li>
+        <li><a href="#qa">QA 验证机制</a></li>
+        <li><a href="#self-improving">Self-Improving 学习机制</a></li>
+        <li><a href="#tech-stack">技术栈</a></li>
+        <li><a href="#advantages">方案优势</a></li>
+      </ol>
+    </section>
+
+    <!-- 方案概述 -->
+    <section id="overview">
+      <h2><span class="icon">📋</span> 方案概述</h2>
+      
+      <p>本方案是一个基于 <strong>多 Agent 协作</strong> 的全栈开发系统，采用 <strong>Spec-First（规范优先）</strong> 的开发范式，通过 Orchestrator 协调 Backend、Frontend、QA 三个专业 Agent 完成 DRF + Vue3 项目的全流程开发。</p>
+      
+      <div class="highlight">
+        <strong>核心理念：</strong> 代码未动，规格先行。所有功能必须先在 <code>.specify/specs/</code> 中定义 API 合同、UI 要求和测试用例，然后由对应 Agent 执行实现。
+      </div>
+      
+      <div class="grid-4">
+        <div class="card primary">
+          <h4>🎯 Spec-First</h4>
+          <ul>
+            <li>规格文档先行</li>
+            <li>API 合同明确</li>
+            <li>测试用例预定义</li>
+          </ul>
+        </div>
+        <div class="card success">
+          <h4>🧪 TDD Mandate</h4>
+          <ul>
+            <li>测试先于实现</li>
+            <li>Red → Green → Refactor</li>
+            <li>覆盖率 >80%</li>
+          </ul>
+        </div>
+        <div class="card warning">
+          <h4>✨ Design Excellence</h4>
+          <ul>
+            <li>专业 UI/UX 标准</li>
+            <li>WCAG AA 无障碍</li>
+            <li>响应式设计</li>
+          </ul>
+        </div>
+        <div class="card danger">
+          <h4>🔒 Type Safety</h4>
+          <ul>
+            <li>Pydantic 验证</li>
+            <li>TypeScript 严格模式</li>
+            <li>类型安全合同</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 系统架构 -->
+    <section id="architecture">
+      <h2><span class="icon">🏗️</span> 系统架构</h2>
+      
+      <div class="architecture-diagram">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+          <!-- Orchestrator -->
+          <div class="architecture-box" style="min-width: 400px;">
+            <strong style="font-size: 1.1rem;">🎯 Orchestrator Agent</strong>
+            <small>系统架构师 &amp; 项目经理</small>
+            <div style="font-size: 0.85rem; margin-top: 8px; opacity: 0.9;">
+              需求分析 | Spec 创建 | 任务分解 | Agent 协调 | 进度追踪
+            </div>
+          </div>
+          
+          <!-- Arrow Down -->
+          <div style="font-size: 2rem; color: var(--accent); font-weight: bold;">⬇</div>
+          
+          <!-- Three Agents Row -->
+          <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+            <!-- Backend -->
+            <div class="architecture-box" style="background: linear-gradient(135deg, #2E4053 0%, #34495E 100%); min-width: 180px;">
+              <strong>🔧 Backend Agent</strong>
+              <small>DRF + TDD</small>
+              <div style="font-size: 0.8rem; margin-top: 8px; opacity: 0.9;">
+                模型/序列化器<br/>视图集/权限<br/>测试 (TDD)
+              </div>
+            </div>
+            
+            <!-- Frontend -->
+            <div class="architecture-box" style="background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%); min-width: 180px;">
+              <strong>🎨 Frontend Agent</strong>
+              <small>Vue3 + UI/UX</small>
+              <div style="font-size: 0.8rem; margin-top: 8px; opacity: 0.9;">
+                组件/Store<br/>API/类型<br/>UI-UX-Pro-Max
+              </div>
+            </div>
+            
+            <!-- QA -->
+            <div class="architecture-box" style="background: linear-gradient(135deg, #27AE60 0%, #2ECC71 100%); min-width: 180px;">
+              <strong>✅ QA Agent</strong>
+              <small>Lint + Test</small>
+              <div style="font-size: 0.8rem; margin-top: 8px; opacity: 0.9;">
+                测试验证<br/>Lint/Type Check<br/>性能/合同
+              </div>
+            </div>
+          </div>
+          
+          <!-- Arrow Down -->
+          <div style="font-size: 2rem; color: var(--accent); font-weight: bold;">⬇</div>
+          
+          <!-- Self-Improving -->
+          <div class="architecture-box" style="background: linear-gradient(135deg, #8E44AD 0%, #9B59B6 100%); min-width: 350px;">
+            <strong>🔍 Self-Improving Agent</strong>
+            <small>经验提取 | 模式抽象 | 持续进化</small>
+            <div style="font-size: 0.85rem; margin-top: 8px; opacity: 0.9;">
+              Multi-Memory: Semantic / Episodic / Working
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <h3>架构说明</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Agent</th>
+            <th>角色</th>
+            <th>核心职责</th>
+            <th>关键约束</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Orchestrator</strong></td>
+            <td>系统架构师</td>
+            <td>需求分析、Spec 管理、任务分解</td>
+            <td>不写实现代码</td>
+          </tr>
+          <tr>
+            <td><strong>Backend</strong></td>
+            <td>DRF 专家</td>
+            <td>模型、序列化器、视图集、测试</td>
+            <td>TDD 强制</td>
+          </tr>
+          <tr>
+            <td><strong>Frontend</strong></td>
+            <td>Vue3 专家</td>
+            <td>组件、Store、API 集成、UI</td>
+            <td>UI-UX-Pro-Max</td>
+          </tr>
+          <tr>
+            <td><strong>QA</strong></td>
+            <td>质量门禁</td>
+            <td>测试验证、Lint、Type Check</td>
+            <td>全部门禁通过</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Agent 职责详解 -->
+    <section id="agents">
+      <h2><span class="icon">👥</span> Agent 职责详解</h2>
+      
+      <div class="grid-2">
+        <div class="card primary">
+          <h4>🎯 Orchestrator Agent</h4>
+          <p><strong>系统架构师 & 项目经理</strong></p>
+          <ul>
+            <li>分析用户需求，检查现有 Spec</li>
+            <li>缺失时协调创建规格文档</li>
+            <li>分解任务为 Backend/Frontend/QA</li>
+            <li>协调 API 合同分歧</li>
+            <li>追踪进度，更新 <code>progress.md</code></li>
+            <li>处理 QA 阻塞问题</li>
+          </ul>
+        </div>
+        
+        <div class="card success">
+          <h4>🔧 Backend Agent</h4>
+          <p><strong>DRF + TDD 专家</strong></p>
+          <ul>
+            <li>阅读规格文档</li>
+            <li>先写失败测试 (RED)</li>
+            <li>实现最小代码 (GREEN)</li>
+            <li>重构优化 (REFACTOR)</li>
+            <li>确保覆盖率 >80%</li>
+            <li>避免 N+1 查询</li>
+          </ul>
+        </div>
+        
+        <div class="card warning">
+          <h4>🎨 Frontend Agent</h4>
+          <p><strong>Vue3 + UI/UX 专家</strong></p>
+          <ul>
+            <li>定义 TypeScript 类型</li>
+            <li>创建 API 客户端</li>
+            <li>实现 Pinia Store</li>
+            <li>开发 Vue 组件</li>
+            <li>应用 UI-UX-Pro-Max 原则</li>
+            <li>确保 0 lint/type 错误</li>
+          </ul>
+        </div>
+        
+        <div class="card danger">
+          <h4>✅ QA Agent</h4>
+          <p><strong>质量门禁</strong></p>
+          <ul>
+            <li>运行 pytest 验证测试</li>
+            <li>运行 npm lint/type-check</li>
+            <li>验证 API 合同匹配规格</li>
+            <li>性能测试 (p95 <200ms)</li>
+            <li>生成 QA 报告</li>
+            <li>阻塞不达标合并</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 核心工作流程 -->
+    <section id="workflow">
+      <h2><span class="icon">🔄</span> 核心工作流程</h2>
+      
+      <div class="flow-diagram">
+        <div class="flow-step"><span>1</span>需求分析</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span>2</span>Spec 创建</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span>3</span>任务分解</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span>4</span>Agent 执行</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span>5</span>QA 验证</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span>6</span>经验沉淀</div>
+      </div>
+      
+      <h3>流程详解</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>步骤</th>
+            <th>执行者</th>
+            <th>输入</th>
+            <th>输出</th>
+            <th>质量门禁</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. 需求分析</strong></td>
+            <td>Orchestrator</td>
+            <td>用户需求</td>
+            <td>需求理解</td>
+            <td>对照 Constitution</td>
+          </tr>
+          <tr>
+            <td><strong>2. Spec 创建</strong></td>
+            <td>Orchestrator</td>
+            <td>需求理解</td>
+            <td><code>.specify/specs/*.md</code></td>
+            <td>API+UI+Test 定义</td>
+          </tr>
+          <tr>
+            <td><strong>3. 任务分解</strong></td>
+            <td>Orchestrator</td>
+            <td>Spec 文档</td>
+            <td>Backend/Frontend/QA 任务</td>
+            <td>任务清晰可执行</td>
+          </tr>
+          <tr>
+            <td><strong>4. Agent 执行</strong></td>
+            <td>Backend/Frontend</td>
+            <td>分配的任务</td>
+            <td>实现代码 + 测试</td>
+            <td>TDD/UI-UX 原则</td>
+          </tr>
+          <tr>
+            <td><strong>5. QA 验证</strong></td>
+            <td>QA</td>
+            <td>实现代码</td>
+            <td>QA 报告</td>
+            <td>全部门禁通过</td>
+          </tr>
+          <tr>
+            <td><strong>6. 经验沉淀</strong></td>
+            <td>Self-Improving</td>
+            <td>完成任务</td>
+            <td><code>semantic-patterns.json</code></td>
+            <td>模式抽象</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Spec-First 开发模式 -->
+    <section id="spec-first">
+      <h2><span class="icon">📐</span> Spec-First 开发模式</h2>
+      
+      <div class="highlight">
+        <strong>核心原则：</strong> 没有规格文档，就没有代码实现。Spec 是唯一事实来源。
+      </div>
+      
+      <h3>Spec 文档结构</h3>
+      <pre>
+# 规格：[功能名称]
+
+## Overview
+功能概述和业务价值
+
+## API Contract
+- 端点定义
+- 请求/响应格式
+- 错误响应
+- 状态码
+
+## UI Requirements
+- 布局要求
+- 颜色/间距/字体
+- 响应式断点
+- 无障碍要求
+- 状态处理 (Loading/Error/Empty)
+
+## Test Cases
+- 单元测试用例
+- 集成测试用例
+- 边界 case
+
+## Implementation Checklist
+- Backend 检查清单
+- Frontend 检查清单
+
+## Files to Create/Modify
+- 需要创建/修改的文件列表
+      </pre>
+      
+      <h3>Spec 管理流程</h3>
+      <div class="grid-3">
+        <div class="card primary">
+          <h4>📄 创建</h4>
+          <p>Orchestrator 协调 Backend/Frontend/QA 共同定义 API 合同、UI 需求、测试用例</p>
+        </div>
+        <div class="card success">
+          <h4>📝 更新</h4>
+          <p>变更需记录理由到 <code>decisions.md</code>，版本号 +1，通知相关 Agent</p>
+        </div>
+        <div class="card warning">
+          <h4>📋 验证</h4>
+          <p>QA 验证实现与 Spec 合同 100% 匹配，不匹配则阻塞</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TDD 强制流程 -->
+    <section id="tdd">
+      <h2><span class="icon">🧪</span> TDD 强制流程 (Backend)</h2>
+      
+      <div class="flow-diagram">
+        <div class="flow-step" style="background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);"><span>RED</span>写失败测试</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" style="background: linear-gradient(135deg, #27AE60 0%, #2ECC71 100%);"><span>GREEN</span>最小实现</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" style="background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);"><span>REFACTOR</span>重构优化</div>
+      </div>
+      
+      <h3>阶段详解</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>阶段</th>
+            <th>动作</th>
+            <th>验证命令</th>
+            <th>通过标准</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong style="color: #E74C3C;">RED</strong></td>
+            <td>编写失败测试</td>
+            <td><code>pytest tests/test_xxx.py -v</code></td>
+            <td>测试失败 (退出码 1)</td>
+          </tr>
+          <tr>
+            <td><strong style="color: #27AE60;">GREEN</strong></td>
+            <td>写最小实现代码</td>
+            <td><code>pytest tests/test_xxx.py -v</code></td>
+            <td>测试通过 (退出码 0)</td>
+          </tr>
+          <tr>
+            <td><strong style="color: #3498DB;">REFACTOR</strong></td>
+            <td>重构，保持测试绿</td>
+            <td><code>pytest -v --cov=app</code></td>
+            <td>测试通过 + 覆盖率>80%</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div class="quote">
+        "没有测试的实现就是裸奔——裸奔上线等于提前写复盘。"
+      </div>
+      
+      <h3>代码示例</h3>
+      <pre>
+# Step 1: RED - 写失败测试 (tests/test_user.py)
+def test_user_creation():
+    user = User.objects.create(username='test', email='test@example.com')
+    assert user.username == 'test'
+    assert user.is_active == True
+
+# Step 2: GREEN - 最小实现 (models.py)
+class User(models.Model):
+    username = models.CharField(max_length=150)
+    email = models.EmailField()
+    is_active = models.BooleanField(default=True)
+
+# Step 3: REFACTOR - 重构优化
+class User(models.Model):
+    """用户模型 - 认证和授权基础。"""
+    
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        db_index=True  # 添加索引
+    )
+    email = models.EmailField(unique=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        db_table = 'auth_user'
+        ordering = ['username']
+      </pre>
+    </section>
+
+    <!-- QA 验证机制 -->
+    <section id="qa">
+      <h2><span class="icon">✅</span> QA 验证机制</h2>
+      
+      <h3>质量门禁 (全部必须通过)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>门禁</th>
+            <th>命令</th>
+            <th>目标</th>
+            <th>失败处理</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>后端测试</strong></td>
+            <td><code>pytest backend/ -v</code></td>
+            <td>退出码 0</td>
+            <td>Backend 修复</td>
+          </tr>
+          <tr>
+            <td><strong>测试覆盖率</strong></td>
+            <td><code>pytest --cov=app</code></td>
+            <td>>80%</td>
+            <td>补充测试</td>
+          </tr>
+          <tr>
+            <td><strong>前端 Lint</strong></td>
+            <td><code>npm run lint</code></td>
+            <td>0 错误</td>
+            <td>Frontend 修复</td>
+          </tr>
+          <tr>
+            <td><strong>Type Check</strong></td>
+            <td><code>npm run type-check</code></td>
+            <td>0 错误</td>
+            <td>Frontend 修复</td>
+          </tr>
+          <tr>
+            <td><strong>API 合同</strong></td>
+            <td>Spec 对比</td>
+            <td>100% 匹配</td>
+            <td>责任方修复</td>
+          </tr>
+          <tr>
+            <td><strong>性能</strong></td>
+            <td>基准测试</td>
+            <td>p95 <200ms</td>
+            <td>优化查询</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <h3>QA 报告格式</h3>
+      <pre>
+## QA 报告 - [功能名称]
+
+### 摘要
+| 检查项 | 状态 | 详情 |
+|-------|--------|---------|
+| 后端测试 | ✅ PASS | 21 个通过，0 个失败 |
+| 测试覆盖率 | ✅ PASS | 85% (目标：80%) |
+| 前端 Lint | ✅ PASS | 0 错误 |
+| Type 检查 | ❌ FAIL | 2 错误 |
+| API 合同 | ✅ PASS | 所有端点匹配规格 |
+| 性能 | ⚠️ WARN | p95=250ms (目标：<200ms) |
+
+### 阻塞 (合并前必须修复)
+- src/views/User.ts:23 - 属性 'status' 不存在
+- src/views/User.ts:24 - 属性 'status' 不存在
+
+### 警告 (记录后继续)
+- /api/cases/ 响应时间 250ms (目标：<200ms)
+- 建议在 DefenseCaseInfo.created_at 上添加索引
+      </pre>
+    </section>
+
+    <!-- Self-Improving 学习机制 -->
+    <section id="self-improving">
+      <h2><span class="icon">🔍</span> Self-Improving 学习机制</h2>
+      
+      <h3>Multi-Memory 架构</h3>
+      <div class="grid-3">
+        <div class="card primary">
+          <h4>📚 Semantic Memory</h4>
+          <p><strong>模式/规则</strong></p>
+          <p><code>semantic-patterns.json</code></p>
+          <ul>
+            <li>可重用模式</li>
+            <li>抽象规则</li>
+            <li>最佳实践</li>
+          </ul>
+        </div>
+        <div class="card success">
+          <h4>📖 Episodic Memory</h4>
+          <p><strong>经验记录</strong></p>
+          <p><code>episodic/YYYY-MM-DD-*.json</code></p>
+          <ul>
+            <li>具体事件</li>
+            <li>成功/失败案例</li>
+            <li>用户反馈</li>
+          </ul>
+        </div>
+        <div class="card warning">
+          <h4>📝 Working Memory</h4>
+          <p><strong>当前会话</strong></p>
+          <p><code>working/*.json</code></p>
+          <ul>
+            <li>会话上下文</li>
+            <li>错误上下文</li>
+            <li>临时数据</li>
+          </ul>
+        </div>
+      </div>
+      
+      <h3>学习流程</h3>
+      <div class="flow-diagram">
+        <div class="flow-step"><span>1</span>经验提取</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span>2</span>模式抽象</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span>3</span>更新 Agent</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span>4</span>置信度追踪</div>
+      </div>
+      
+      <h3>Hooks 触发机制</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Hook</th>
+            <th>触发时机</th>
+            <th>动作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>PreToolUse</strong></td>
+            <td>Bash/Write/Edit 前</td>
+            <td>记录工具使用日志</td>
+          </tr>
+          <tr>
+            <td><strong>PostToolUse</strong></td>
+            <td>Bash 执行后</td>
+            <td>捕获非零退出码 (错误)</td>
+          </tr>
+          <tr>
+            <td><strong>Stop</strong></td>
+            <td>会话结束</td>
+            <td>触发经验提取</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div class="quote">
+        "每次交互都是学习机会，每个错误都是改进契机。"
+      </div>
+    </section>
+
+    <!-- 技术栈 -->
+    <section id="tech-stack">
+      <h2><span class="icon">🛠️</span> 技术栈</h2>
+      
+      <div class="grid-2">
+        <div class="card primary">
+          <h4>🐍 后端技术栈</h4>
+          <ul>
+            <li><strong>Python 3.11+</strong> - 语言基础</li>
+            <li><strong>Django 5.x</strong> - Web 框架</li>
+            <li><strong>DRF</strong> - REST API</li>
+            <li><strong>Pytest + Pytest-Django</strong> - 测试框架</li>
+            <li><strong>Celery</strong> - 异步任务</li>
+            <li><strong>Pydantic</strong> - 数据验证</li>
+          </ul>
+        </div>
+        
+        <div class="card warning">
+          <h4>🎨 前端技术栈</h4>
+          <ul>
+            <li><strong>Vue 3.4+</strong> - UI 框架</li>
+            <li><strong>TypeScript</strong> - 类型系统</li>
+            <li><strong>Vite</strong> - 构建工具</li>
+            <li><strong>Pinia</strong> - 状态管理</li>
+            <li><strong>TailwindCSS</strong> - 样式框架</li>
+            <li><strong>Vue Router</strong> - 路由</li>
+          </ul>
+        </div>
+      </div>
+      
+      <h3>Agent 系统</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>组件</th>
+            <th>用途</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>OpenCode AI</strong></td>
+            <td>AI 助手平台</td>
+            <td>执行 Agent 任务</td>
+          </tr>
+          <tr>
+            <td><strong>Superpowers Skills</strong></td>
+            <td>技能系统</td>
+            <td>TDD/Debug 等方法论</td>
+          </tr>
+          <tr>
+            <td><strong>Self-Improving Agent</strong></td>
+            <td>学习系统</td>
+            <td>16.5K installs</td>
+          </tr>
+          <tr>
+            <td><strong>PUA Skill</strong></td>
+            <td>高绩效文化</td>
+            <td>提升 Agent 积极性</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 方案优势 -->
+    <section id="advantages">
+      <h2><span class="icon">⭐</span> 方案优势</h2>
+      
+      <div class="grid-3">
+        <div class="card success">
+          <h4>📋 减少沟通成本</h4>
+          <p>Spec-First 确保所有人对需求理解一致，减少返工</p>
+          <p class="status-badge success">预期 -30% 任务理解时间</p>
+        </div>
+        
+        <div class="card success">
+          <h4>🧪 提高代码质量</h4>
+          <p>TDD 强制 + QA 门禁，确保测试覆盖率>80%</p>
+          <p class="status-badge success">缺陷率显著降低</p>
+        </div>
+        
+        <div class="card success">
+          <h4>🤖 提升开发效率</h4>
+          <p>多 Agent 并行协作，自动化执行重复任务</p>
+          <p class="status-badge success">预期 -50% Agent 重复工作</p>
+        </div>
+        
+        <div class="card success">
+          <h4>🔍 持续进化能力</h4>
+          <p>Self-Improving 从每次交互学习，模式沉淀复用</p>
+          <p class="status-badge success">经验可积累传承</p>
+        </div>
+        
+        <div class="card success">
+          <h4>🎨 专业 UI/UX</h4>
+          <p>UI-UX-Pro-Max 原则确保设计质量，无"丑陋默认值"</p>
+          <p class="status-badge success">WCAG AA 合规</p>
+        </div>
+        
+        <div class="card success">
+          <h4>🔒 类型安全</h4>
+          <p>Pydantic + TypeScript 双重类型保障</p>
+          <p class="status-badge success">运行时错误减少</p>
+        </div>
+      </div>
+      
+      <h3>预期收益汇总</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>指标</th>
+            <th>改进</th>
+            <th>实现机制</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>任务理解时间</td>
+            <td class="status-badge success">-30%</td>
+            <td>Spec-First + 任务分解模板</td>
+          </tr>
+          <tr>
+            <td>Agent 重复工作</td>
+            <td class="status-badge success">-50%</td>
+            <td>Orchestrator 协调 + API 合同明确</td>
+          </tr>
+          <tr>
+            <td>新 Agent 上手时间</td>
+            <td class="status-badge success">-50%</td>
+            <td>详细 Agent Prompt + 模板</td>
+          </tr>
+          <tr>
+            <td>代码质量一致性</td>
+            <td class="status-badge success">↑ 显著提升</td>
+            <td>TDD 强制 + QA 检查清单</td>
+          </tr>
+          <tr>
+            <td>性能问题发现</td>
+            <td class="status-badge success">提前发现</td>
+            <td>性能门禁 + 基准测试</td>
+          </tr>
+          <tr>
+            <td>错误定位速度</td>
+            <td class="status-badge success">↑ 快速定位</td>
+            <td>标准化 QA 报告格式</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer>
+      <p>DRF + Vue3 Multi-Agent 开发系统 | 技术方案汇报 | 2026-03-24</p>
+      <p>基于 Spec-Kit · Superpower · UI-UX-Pro-Max 原则</p>
+    </footer>
+  </div>
+</body>
+</html>
