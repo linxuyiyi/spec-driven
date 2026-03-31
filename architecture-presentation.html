@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>范式类测试 - E2E测试方案</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .slide {
+      width: 100%;
+      max-width: 1400px;
+      min-height: 92vh;
+      background: rgba(15,23,42,0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 36px 48px;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      text-align: center;
+      color: rgba(255,255,255,0.6);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+    .tag-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .tag {
+      background: rgba(56,189,248,0.15);
+      border: 1px solid rgba(56,189,248,0.3);
+      color: #38bdf8;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      margin: 20px 0;
+    }
+
+    /* Grid layouts */
+    .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .grid-4col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+    /* Section styling */
+    .section { margin-bottom: 20px; }
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: linear-gradient(180deg, #38bdf8, #818cf8);
+      border-radius: 2px;
+    }
+
+    /* Flow container */
+    .flow-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .flow-box {
+      background: rgba(30,41,59,0.8);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 8px 12px;
+      text-align: center;
+      min-width: 90px;
+    }
+    .flow-box.highlight {
+      background: rgba(56,189,248,0.15);
+      border-color: rgba(56,189,248,0.4);
+    }
+    .flow-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+    .flow-sub {
+      font-size: 0.6rem;
+      color: rgba(255,255,255,0.45);
+      margin-top: 2px;
+    }
+    .flow-arrow {
+      color: rgba(255,255,255,0.3);
+      font-size: 1rem;
+    }
+
+    /* Business flow */
+    .biz-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(30,41,59,0.5);
+      border-radius: 12px;
+      padding: 14px 20px;
+    }
+    .biz-step {
+      background: rgba(56,189,248,0.12);
+      border: 1px solid rgba(56,189,248,0.25);
+      border-radius: 8px;
+      padding: 10px 16px;
+      text-align: center;
+    }
+    .biz-step-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #38bdf8;
+    }
+    .biz-step-sub {
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.5);
+      margin-top: 2px;
+    }
+    .biz-arrow {
+      color: rgba(56,189,248,0.5);
+      font-size: 1.2rem;
+    }
+
+    /* Card styles */
+    .card {
+      background: rgba(30,41,59,0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .card-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .card-icon svg { width: 16px; height: 16px; color: white; }
+    .card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    /* Challenge cards */
+    .challenge-card {
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .challenge-icon {
+      width: 24px;
+      height: 24px;
+      background: rgba(239,68,68,0.2);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .challenge-icon svg { width: 12px; height: 12px; color: #f87171; }
+    .challenge-text {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.85);
+      line-height: 1.5;
+    }
+
+    /* Solution list */
+    .solution-item {
+      background: rgba(30,41,59,0.5);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .solution-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .solution-num {
+      width: 22px;
+      height: 22px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+    .solution-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+    .solution-sub {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.5);
+      margin-left: 30px;
+      line-height: 1.6;
+    }
+
+    /* Agent table */
+    .agent-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+    }
+    .agent-table th {
+      background: rgba(56,189,248,0.1);
+      color: #38bdf8;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .agent-table td {
+      padding: 10px 12px;
+      color: rgba(255,255,255,0.8);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      vertical-align: top;
+    }
+    .agent-table tr:last-child td { border-bottom: none; }
+    .agent-abbr {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    /* Bottom badge */
+    .bottom-badge {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 16px;
+    }
+    .badge {
+      background: rgba(56,189,248,0.1);
+      border: 1px solid rgba(56,189,248,0.2);
+      border-radius: 8px;
+      padding: 8px 20px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #38bdf8;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-2col, .grid-3col, .grid-4col { grid-template-columns: 1fr; }
+      .agent-table { font-size: 0.7rem; }
+    }
+    @media (max-width: 768px) {
+      .slide { padding: 24px 20px; }
+      h1 { font-size: 1.8rem; }
+      .biz-flow { flex-direction: column; }
+      .biz-arrow { transform: rotate(90deg); }
+      .flow-container { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <h1>范式类测试 E2E 测试方案</h1>
+    <p class="subtitle">从需求到测试结果的端到端测试</p>
+    <div class="tag-row">
+      <span class="tag">参数约束</span>
+      <span class="tag">参数升级</span>
+      <span class="tag">License 校验</span>
+    </div>
+    <div class="divider"></div>
+
+    <!-- 业务流程 -->
+    <div class="section">
+      <div class="section-title">业务流程</div>
+      <div class="biz-flow">
+        <div class="biz-step">
+          <div class="biz-step-title">需求描述</div>
+          <div class="biz-step-sub">原始业务需求</div>
+        </div>
+        <div class="biz-arrow">→</div>
+        <div class="biz-step">
+          <div class="biz-step-title">文本用例</div>
+          <div class="biz-step-sub">结构化测试要素</div>
+        </div>
+        <div class="biz-arrow">→</div>
+        <div class="biz-step">
+          <div class="biz-step-title">脚本用例</div>
+          <div class="biz-step-sub">可执行脚本</div>
+        </div>
+        <div class="biz-arrow">→</div>
+        <div class="biz-step" style="background: rgba(56,189,248,0.2); border-color: rgba(56,189,248,0.4);">
+          <div class="biz-step-title">测试结果</div>
+          <div class="biz-step-sub">E2E 执行反馈</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E2E 动作流程 -->
+    <div class="section">
+      <div class="section-title">E2E 动作流程</div>
+      <div class="flow-container">
+        <div class="flow-box">
+          <div class="flow-title">获取原始需求</div>
+          <div class="flow-sub">Input</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">
+          <div class="flow-title">结构化测试要素</div>
+          <div class="flow-sub">TFO</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">
+          <div class="flow-title">设计文本用例</div>
+          <div class="flow-sub">TFO</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box highlight">
+          <div class="flow-title">审核文本用例</div>
+          <div class="flow-sub">MDE</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">
+          <div class="flow-title">生成脚本用例</div>
+          <div class="flow-sub">AE</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">
+          <div class="flow-title">匹配测试环境</div>
+          <div class="flow-sub">AE</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">
+          <div class="flow-title">运行调试脚本</div>
+          <div class="flow-sub">AE</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">
+          <div class="flow-title">创建上库 MR</div>
+          <div class="flow-sub">AE</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box highlight">
+          <div class="flow-title">审核脚本用例</div>
+          <div class="flow-sub">MDE</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box" style="background: rgba(56,189,248,0.15); border-color: rgba(56,189,248,0.4);">
+          <div class="flow-title">创建流水线任务</div>
+          <div class="flow-sub">TE</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 难点与解决措施 - 左右布局 -->
+    <div class="grid-2col">
+      <!-- 难点 -->
+      <div class="section">
+        <div class="section-title">难点与挑战</div>
+        <div class="challenge-card" style="margin-bottom: 10px;">
+          <div class="challenge-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          </div>
+          <div class="challenge-text">AI 缺少无线业务背景知识，没有明确写出的业务规则或惯例，AI 可能遗漏关键测试点</div>
+        </div>
+        <div class="challenge-card" style="margin-bottom: 10px;">
+          <div class="challenge-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          </div>
+          <div class="challenge-text">AI 理解原始需求偏差会导致整体测试方向错误</div>
+        </div>
+        <div class="challenge-card">
+          <div class="challenge-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          </div>
+          <div class="challenge-text">AI 自主调试修复时，对环境问题（配置残留、版本不匹配等）及产品问题的识别困难</div>
+        </div>
+      </div>
+
+      <!-- 解决措施 -->
+      <div class="section">
+        <div class="section-title">解决措施</div>
+        <div class="solution-item">
+          <div class="solution-header">
+            <div class="solution-num">1</div>
+            <div class="solution-title">总结专家经验 & 业务背景知识，构建范式测试指导书</div>
+          </div>
+          <div class="solution-sub">
+            · 参数 OCL 设计指导书<br>
+            · 参数升级设计指导书<br>
+            · 无线参数定义说明书<br>
+            · 无线 License 定义说明书
+          </div>
+        </div>
+        <div class="solution-item">
+          <div class="solution-header">
+            <div class="solution-num">2</div>
+            <div class="solution-title">基于角色构建多 Agent 协作智能团队</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Agent 角色表格 -->
+    <div class="section">
+      <div class="section-title">多 Agent 协作团队</div>
+      <table class="agent-table">
+        <thead>
+          <tr>
+            <th style="width: 80px;">Agent</th>
+            <th style="width: 120px;">职责</th>
+            <th style="width: 180px;">技能</th>
+            <th style="width: 140px;">输入</th>
+            <th>输出</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="agent-abbr">MDE</span></td>
+            <td>测试设计审核人</td>
+            <td>用例检视、文本用例检视</td>
+            <td>标准化文本用例</td>
+            <td>文本用例修改建议，测试设计遗漏</td>
+          </tr>
+          <tr>
+            <td><span class="agent-abbr">TFO</span></td>
+            <td>测试设计负责人</td>
+            <td>用例设计、文本用例上库</td>
+            <td>用户故事 / 需求</td>
+            <td>标准化文本用例</td>
+          </tr>
+          <tr>
+            <td><span class="agent-abbr">AE</span></td>
+            <td>脚本工程师</td>
+            <td>脚本开发、脚本调试、环境选择、脚本上库</td>
+            <td>测试用例</td>
+            <td>可执行测试脚本</td>
+          </tr>
+          <tr>
+            <td><span class="agent-abbr">TE</span></td>
+            <td>测试用例执行人</td>
+            <td>流水线执行</td>
+            <td>测试脚本</td>
+            <td>执行结果</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bottom-badge">
+      <div class="badge">E2E 端到端</div>
+      <div class="badge">多 Agent 协作</div>
+      <div class="badge">范式测试驱动</div>
+    </div>
+  </div>
+</body>
+</html>
